@@ -2,3 +2,5 @@ ollama
 langchain-ollama
 langchain
 langgraph
+pluggy >=1.5
+platformdirs>=2
