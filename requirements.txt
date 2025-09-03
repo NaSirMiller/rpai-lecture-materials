@@ -2,5 +2,8 @@ ollama
 langchain-ollama
 langchain
 langgraph
+langchain-community
 pluggy >=1.5
 platformdirs>=2
+ipykernel
+wikipedia
