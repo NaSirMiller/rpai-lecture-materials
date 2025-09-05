@@ -1,9 +1,9 @@
-from langchain_core.tools import tool
 import uuid
 import os
+from langchain_community.tools import WikipediaQueryRun
+from langchain.utilities import WikipediaAPIWrapper
 
 
-@tool
 def save_results_to_path(
     content: str, file_name: str, file_directory: str = None
 ) -> str:
@@ -42,7 +42,6 @@ def save_results_to_path(
         raise RuntimeError(f"Failed to save file: {e}")
 
 
-@tool
 def read_results_from_path(path: str = None) -> str:
     """
     Reads the content from the specified path.
@@ -70,7 +69,6 @@ def read_results_from_path(path: str = None) -> str:
         raise RuntimeError(f"Failed to read file: {e}")
 
 
-@tool
 def get_top_k_keywords(content: str, k: int) -> list[str]:
     """
     Finds most frequent words in the content.
@@ -88,3 +86,26 @@ def get_top_k_keywords(content: str, k: int) -> list[str]:
         word_freq[word] = word_freq.get(word, 0) + 1
     top_k = sorted(word_freq, key=word_freq.get, reverse=True)[:k]
     return top_k
+
+
+def search_wikipedia(query: str) -> str:
+    """
+    Searches wikipedia for specific query.
+
+    Args:
+        query (str): Question to search for
+
+    Returns:
+        str: Wikipedia's response to the question.
+    """
+    wiki_api = WikipediaAPIWrapper()
+    wiki_tool = WikipediaQueryRun(api_wrapper=wiki_api)
+    return wiki_tool.run(query)
+
+
+tools_available = [
+    save_results_to_path,
+    read_results_from_path,
+    get_top_k_keywords,
+    search_wikipedia,
+]
