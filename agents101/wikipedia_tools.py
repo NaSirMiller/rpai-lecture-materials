@@ -30,6 +30,7 @@ def save_results_to_path(
     if file_directory is None:
         print("Agent did not provide a path.")
         raise ValueError("Agent did not provide a path.")
+    os.makedirs(file_directory, exist_ok=True)
     file_id = str(uuid.uuid4())
     path = os.path.join(file_directory, file_name)
     try:
@@ -80,6 +81,7 @@ def get_top_k_keywords(content: str, k: int) -> list[str]:
     Returns:
         list[str]: The top k frequent keywords.
     """
+    k = int(k)  # Deal with string inputs
     words = content.split()
     word_freq = {}
     for word in words:
@@ -109,3 +111,10 @@ tools_available = [
     get_top_k_keywords,
     search_wikipedia,
 ]
+
+tools_mapping = {
+    "save_results_to_path": save_results_to_path,
+    "read_results_from_path": read_results_from_path,
+    "get_top_k_keywords": get_top_k_keywords,
+    "search_wikipedia": search_wikipedia,
+}
