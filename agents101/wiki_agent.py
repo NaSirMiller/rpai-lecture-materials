@@ -2,7 +2,6 @@ import json
 import ollama
 from pydantic import BaseModel, ValidationError
 from typing import Any, Callable, Dict, Optional, Literal
-from wikipedia_tools import tools_mapping
 
 
 class Step(BaseModel):
