@@ -2,6 +2,7 @@ ollama
 langchain-community
 langchain-huggingface
 faiss-cpu
+fastmcp
 pluggy >=1.5
 platformdirs>=2
 ipykernel
