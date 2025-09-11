@@ -1,3 +1,4 @@
+import asyncio
 from client import MCPClient
 import json
 import logging
@@ -35,17 +36,25 @@ class WikipediaAgent:
         self.most_recent_summary: str = None
 
     async def setup(self, mcp_server_path: str) -> None:
-        logging.info(f"Connecting to server located at {mcp_server_path}...")
+        print(f"Connecting to server located at {mcp_server_path}...")
         await self.mcp_client.connect_to_server(mcp_server_path)
-        logging.info("Connection to server complete.")
+        print("Connection to server complete.")
         self.tools = self.mcp_client.get_tools()
-        save_format = await self.mcp_client.read_resource(uri="resource://save_format")
+        print("Getting summary format resource...")
+        resource_result = await self.mcp_client.read_resource(
+            uri="resource://summary_format"
+        )
+        print("Summary prompt resource read.")
+        save_format = resource_result.contents[-1].text
         if save_format is None:
             logging.error("The file save format read from the server is not valid.")
             raise ValueError("The file save format read from the server is not valid.")
+        print("Getting system prompt...")
         self.system_prompt = await self.mcp_client.get_prompt(
             name="default_system_prompt", arguments={"file_save_format": save_format}
         )
+        print(f"Retrieved system prompt.")
+        print("Client-server setup complete.")
 
     def parse_agent_response(self, response: str) -> Step:
         """
@@ -69,7 +78,7 @@ class WikipediaAgent:
         except (json.JSONDecodeError, ValidationError) as e:
             raise ValueError(f"Agent has produced invalid JSON: {e}")
 
-    def execute_tool(self, tool_call: Dict[str, Any]) -> dict:
+    async def execute_tool(self, tool_call: Dict[str, Any]) -> dict:
         """
         Executes a callable function/tool given provided parameters.
         """
@@ -80,7 +89,11 @@ class WikipediaAgent:
         if name not in [tool.name for tool in self.tools]:
             return {"success": False, "result": f"Unknown tool: {name}"}
         try:
-            result = self.mcp_client.call_tool(name=name, arguments=params)
+            print(f"Executing {name} tool...")
+            tool_result_obj = await self.mcp_client.call_tool(
+                name=name, arguments=params
+            )
+            result = tool_result_obj.content[-1].text
             return {"success": True, "result": result}
         except Exception as e:
             return {"success": False, "result": str(e)}
@@ -92,18 +105,19 @@ class WikipediaAgent:
         response = ollama.chat(model=self.model_name, messages=messages)
         return response.message.content.strip()
 
-    def summarize(self) -> None:
+    async def summarize(self) -> None:
         """
         Summarize the tool calls for the most recent query.
         """
-        summarization_prompt = """
-        Answer the user's original question based on the following tool calls and results. Be concise.
-        """
-
         trace_summary = "\n".join(
             f"- Intent: {s.intent}, Tool: {s.function}, Result: {s.tool_result}"
             for s in self.most_recent_trace
         )
+
+        result = await self.mcp_client.get_prompt(
+            name="summarization_user_prompt", arguments={}
+        )
+        summarization_prompt = result.messages[-1].content.text
 
         messages = [
             {
@@ -117,22 +131,29 @@ class WikipediaAgent:
         self.most_recent_summary = summary
         return summary
 
-    def run(self, query: str) -> str:
+    async def run(self, query: str) -> str:
         """
         Emulates the agentic loop.
         """
         self.most_recent_trace = []
         messages = [
-            {"role": "system", "content": self.system_prompt},
+            {"role": "system", "content": self.system_prompt.messages[-1].content.text},
             {"role": "user", "content": query},
         ]
 
         for iteration in range(self.max_iterations):
+            print(f"Iteration {iteration + 1} out of {self.max_iterations}...")
+
+            if self.most_recent_trace is not None and len(self.most_recent_trace) > 0:
+                print(f"Most recent step: {self.most_recent_trace[-1]}.")
+
+            print(f"Querying LLM...")
             response = self.call_llm(messages)
+            print(f"Retreived LLM response.")
             try:
                 step = self.parse_agent_response(response)
-                print(f"Step {iteration + 1}: {step}")
             except ValueError as e:
+                print("Agent did not produce valid JSON. Retrying...")
                 messages.append(
                     {
                         "role": "user",
@@ -147,7 +168,7 @@ class WikipediaAgent:
                     or step.function["name"] == "get_top_k_keywords"
                 ) and not step.function["parameters"].get("content"):
                     step.function["parameters"]["content"] = self.most_recent_summary
-                tool_result = self.execute_tool(step.function)
+                tool_result = await self.execute_tool(step.function)
                 step.tool_result = tool_result
                 messages.append(
                     {
@@ -165,5 +186,10 @@ class WikipediaAgent:
             self.most_recent_trace.append(step)
 
             if step.status == "done":
+                print("Agent has declared problem as 'done'. Waiting for next steps...")
                 break
-        return self.summarize()
+
+            print("\n\n")
+
+        print("Generating summary of recent message history...")
+        return await self.summarize()

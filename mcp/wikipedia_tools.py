@@ -1,13 +1,9 @@
-from mcp.server.fastmcp import FastMCP
 from langchain_community.tools import WikipediaQueryRun
 from langchain.utilities import WikipediaAPIWrapper
 import os
 import uuid
 
-mcp_server = FastMCP("tools")
 
-
-@mcp_server.tool()
 def save_results_to_path(
     content: str, file_name: str, file_directory: str = None
 ) -> str:
@@ -47,7 +43,6 @@ def save_results_to_path(
         raise RuntimeError(f"Failed to save file: {e}")
 
 
-@mcp_server.tool()
 def read_results_from_path(path: str = None) -> str:
     """
     Reads the content from the specified path.
@@ -75,7 +70,6 @@ def read_results_from_path(path: str = None) -> str:
         raise RuntimeError(f"Failed to read file: {e}")
 
 
-@mcp_server.tool()
 def get_top_k_keywords(content: str, k: int) -> list[str]:
     """
     Finds most frequent words in the content.
@@ -96,7 +90,6 @@ def get_top_k_keywords(content: str, k: int) -> list[str]:
     return top_k
 
 
-@mcp_server.tool()
 def search_wikipedia(query: str) -> str:
     """
     Searches wikipedia for specific query.
@@ -126,7 +119,9 @@ tools_mapping = {
     "search_wikipedia": search_wikipedia,
 }
 
-if __name__ == "__main__":
-    mcp_server.run(
-        transport="stdio",
-    )
+__all__ = [
+    "save_results_to_path",
+    "read_results_from_path",
+    "get_top_k_keywords",
+    "search_wikipedia",
+]

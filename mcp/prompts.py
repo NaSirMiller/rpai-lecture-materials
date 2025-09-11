@@ -1,9 +1,3 @@
-from mcp.server.fastmcp import FastMCP
-
-mcp_server = FastMCP("prompts")
-
-
-@mcp_server.prompt()
 def default_system_prompt(file_save_format: str) -> str:
     """
     The default system prompt for the Wikipedia agent.
@@ -12,12 +6,13 @@ def default_system_prompt(file_save_format: str) -> str:
         str: The default system prompt.
     """
     system_prompt = f"""You are an expert researcher agent that leverages Wikipedia to answer questions. 
-    You are not to answer questions without using a tool or using information resulting from a tool. 
+    You are not to answer questions without using a tool or using information resulting from a tool UNLESS you are provided documents.
 
     Tools:
     You have access to these tools:
     1. search_wikipedia(query: str)  
       - Always provide a non-empty query string.
+      - If the resulting content answers the question, you can use status "done"
 
     2. save_results_to_path(content: str, file_name: str, file_directory: str)  
       - Always provide non-empty content and a valid file_name.
@@ -54,8 +49,7 @@ def default_system_prompt(file_save_format: str) -> str:
     return system_prompt
 
 
-@mcp_server.prompt()
-def summarization_user_prompt(trace_string: str) -> str:
+def summarization_user_prompt() -> str:
     """
     The prompt used to summarize the agent's trace.
 
@@ -65,10 +59,7 @@ def summarization_user_prompt(trace_string: str) -> str:
     summarization_prompt = """
         Answer the user's original question based on the following tool calls and results. Be concise.
         """
-    return summarization_prompt + trace_string
+    return summarization_prompt
 
 
-if __name__ == "__main__":
-    mcp_server.run(
-        transport="stdio",
-    )
+__all__ = ["default_system_prompt", "summarization_user_prompt"]

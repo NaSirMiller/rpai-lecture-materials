@@ -1,7 +1,7 @@
 import uuid
 import os
 from langchain_community.tools import WikipediaQueryRun
-from langchain.utilities import WikipediaAPIWrapper
+from langchain_community.utilities import WikipediaAPIWrapper
 
 
 def save_results_to_path(

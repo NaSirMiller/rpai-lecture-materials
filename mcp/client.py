@@ -26,7 +26,7 @@ class MCPClient:
             - Supports ".py" server files
 
         Raises:
-          ValueError: Provided server script path is not a python file.
+            ValueError: Provided server script path is not a python file.
         """
         is_valid_extension = server_script_path.endswith(".py")
 
