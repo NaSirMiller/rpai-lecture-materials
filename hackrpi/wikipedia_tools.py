@@ -8,18 +8,18 @@ def save_results_to_path(
     content: str, file_name: str, file_directory: str = None
 ) -> str:
     """
-    Saves the generated content to a file at {path}.
+        Saves the generated content to a file at {path}.
 
-    Args:
-        content (str): Results from wikipedia
-        file_name (str): Provided file name from user or agent.
-        file_directory (str): Where to save results
+        Args:
+            content (str): Results from wikipedia
+            file_name (str): Provided file name from user or agent.
+            file_directory (str): Where to save results
 
-    Returns:
-        str: Stringified uuid
-
-    Raises:
-        RuntimeError: If the file cannot be saved
+        Returns:
+            str: Stringified uuid
+    A
+        Raises:
+            RuntimeError: If the file cannot be saved
     """
     if content is None:
         print("Agent did not pass any content.")
