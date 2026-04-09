@@ -1,8 +1,11 @@
 from mcp.server.fastmcp import FastMCP
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 import wikipedia_tools
 import resources
 import prompts
+
 
 
 server = FastMCP("wikipedia_server")

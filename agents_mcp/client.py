@@ -90,6 +90,9 @@ class MCPClient:
             return self.resources
 
     async def get_prompt(self, name: str, arguments: dict[str, str]) -> str:
+        if self.session is None:
+            raise RuntimeError("Session is not initialized")
+        
         return await self.session.get_prompt(name=name, arguments=arguments)
 
     async def call_tool(self, name: str, arguments: dict[str, Any]) -> Any:
