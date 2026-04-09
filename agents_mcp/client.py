@@ -116,7 +116,7 @@ class OpenRouterClient:
 
     def chat(
         self,
-        model: str = "deepseek/deepseek-r1-distill-llama-70b:free",
+        model: str = "openai/gpt-oss-120b:free",
         messages: List = [],
     ) -> Dict:  # TODO: Change return type to response string
         # TODO: Add type hint for response

@@ -1,5 +1,5 @@
 from langchain_community.tools import WikipediaQueryRun
-from langchain.utilities import WikipediaAPIWrapper
+from langchain_community.utilities import WikipediaAPIWrapper
 import os
 import uuid
 
